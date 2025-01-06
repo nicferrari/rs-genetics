@@ -15,15 +15,21 @@ What are the best values for the 6 weights (w1 to w6)? We are going to use the g
     }
 
     let mut ga = GA::new(fitness, 10, inputs, target);
+    println!("Initial population");
     ga.population.inspect();
     let (eval,sorted_pop) = ga.evaluate();
-    for i in 0..eval.len(){
-        println!("Individual {} fitness {}",i,eval[i]);
-    }
+    //for i in 0..eval.len(){
+    //    println!("Individual {} fitness {}",i,eval[i]);
+    //}
     ga.population.update(sorted_pop.clone());
+    println!("Sorted initial population");
     ga.population.inspect();
-
     let new_pop = ga.rank_selection_cumulative_distr();
     ga.population.update(new_pop);
+    println!("Selected parents");
+    ga.population.inspect();
+    let new_pop2 = ga.mate_population();
+    ga.population.update(new_pop2);
+    println!("Mated population");
     ga.population.inspect();
 }

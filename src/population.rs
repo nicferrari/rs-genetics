@@ -1,5 +1,5 @@
-use std::ops::Index;
 use rand_distr::{Uniform, Distribution};
+use rand::seq::SliceRandom;
 
 pub struct GA<F>
 where F: Fn(&Vec<f64>, &Vec<f64>, f64)->f64
@@ -70,6 +70,19 @@ where F: Fn(&Vec<f64>, &Vec<f64>, f64)->f64
         }
         selected_parents
     }
+    pub fn mate_population(&self) -> Vec<Vec<f64>> {
+        let selected_parents = &mut self.population.individuals.clone();
+        selected_parents.shuffle(& mut rand::thread_rng());
+        let mut new_population = Vec::new();
+        for i in (0..self.population.individuals.len()).step_by(2){
+            if i+1 < selected_parents.len(){
+                let (child1, child2) = crossover(&selected_parents[i], &selected_parents[i+1]);
+                new_population.push(child1);
+                new_population.push(child2);
+            }
+        }
+        new_population
+    }
 }
 
 pub struct Population{
@@ -97,3 +110,13 @@ impl Population{
         self.individuals = new_population;
     }
 }
+///performs random single-point crossover (i.e. crossover_point is randomly selected vs possible fixed point)
+    pub fn crossover(parent1:&Vec<f64>, parent2:&Vec<f64>)->(Vec<f64>,Vec<f64>){
+        let gene_length = parent1.len();
+        let crossover_point = rand::random::<usize>() % gene_length;
+        let mut child1_genes = parent1[..crossover_point].to_vec();
+        child1_genes.extend_from_slice(&parent2[crossover_point..]);
+        let mut child2_genes = parent2[..crossover_point].to_vec();
+        child2_genes.extend_from_slice(&parent1[crossover_point..]);
+        (child1_genes,child2_genes)
+    }
