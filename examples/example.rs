@@ -14,7 +14,8 @@ What are the best values for the 6 weights (w1 to w6)? We are going to use the g
         return 1./(target-distance).abs();
     }
 
-    let mut ga = GA::new(fitness, 10, inputs, target);
+    let mut ga = GA::new(fitness, 10, inputs.clone(), target);
+    /*
     println!("Initial population");
     ga.population.inspect();
     let (eval,sorted_pop) = ga.evaluate();
@@ -31,5 +32,11 @@ What are the best values for the 6 weights (w1 to w6)? We are going to use the g
     let new_pop2 = ga.mate_population();
     ga.population.update(new_pop2);
     println!("Mated population");
-    ga.population.inspect();
+    ga.population.inspect();*/
+    let hist = ga.evolve(1000);
+    for i in 0..hist.len(){
+        println!("Epoch {} fitness = {:.5}",i,hist[i]);
+    }
+    let solution:f64 = ga.population.individuals[0].iter().zip(inputs.iter()).map(|(x,y)|x*y).collect::<Vec<f64>>().iter().sum();
+    println!("Solution = {}",solution);
 }
