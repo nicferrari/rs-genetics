@@ -9,7 +9,7 @@ What are the best values for the 6 weights (w1 to w6)? We are going to use the g
     let inputs = vec![4.,-2.,3.5,5.,-11.,-4.7];
     let target = 44.;
 
-    fn fitness(inputs:&Vec<f64>, weights:&Vec<f64>, target:f64)->f64{
+    fn fitness(weights:&Vec<f64>, inputs:&Vec<f64>, target:f64)->f64{
         let distance:f64 = inputs.iter().zip(weights.iter()).map(|(x,y)|x*y).collect::<Vec<f64>>().iter().sum();
         return 1./(target-distance).abs();
     }

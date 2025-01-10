@@ -1,6 +1,5 @@
 use std::time::Instant;
 use rand::Rng;
-use rand_distr::{Uniform, Distribution};
 use rand::seq::SliceRandom;
 
 pub struct GA<F>
@@ -16,9 +15,10 @@ impl <F> GA<F>
 where F: Fn(&Vec<f64>, &Vec<f64>, f64)->f64
 {
     ///initializes GA
-    pub fn new(evaluate: F, num_individuals: i64, inputs:Vec<f64>, target:f64)->Self{
+    pub fn new(evaluate: F, num_individuals: usize, inputs:Vec<f64>, target:f64)->Self{
         println!("Initializing population of {} individuals",num_individuals);
-        let population = self::Population::new(num_individuals);
+        let num_genes = inputs.len();
+        let population = self::Population::new(num_individuals, num_genes);
         GA{population, evaluate, target, inputs}
     }
     ///evaluates population based on the function provided during initialization
@@ -108,6 +108,7 @@ where F: Fn(&Vec<f64>, &Vec<f64>, f64)->f64
             }
         }
     }
+    ///one step of evolution (i.e. calculation of initial fitness, selection of parents, crossover, mutation and recalculation of fitness)
     pub fn step(&mut self) -> f64{
         println!("Evolving...");
         let (eval, sorted_pop) = self.evaluate();
@@ -123,7 +124,8 @@ where F: Fn(&Vec<f64>, &Vec<f64>, f64)->f64
         println!("Best final fitness = {}",eval[0]);
         eval[0]
     }
-    pub fn evolve(&mut self, num_steps:i64) ->Vec<f64>{
+    ///performs a define number of steps
+    pub fn evolve(&mut self, num_steps:usize) ->Vec<f64>{
         let start_time = Instant::now();
         let mut hist=Vec::new();
         for i in 0..num_steps{
@@ -142,10 +144,9 @@ pub struct Population{
 }
 
 impl Population{
-    pub fn new(num_individual:i64)->Self{
+    pub fn new(num_individuals:usize, num_genes:usize) ->Self{
         let mut rng = rand::thread_rng();
-        let uniform = Uniform::<f64>::new(-4.,4.);
-        let chromosomes = (0..num_individual).map(|_| { (0..6).map(|_| uniform.sample(&mut rng)).collect::<Vec<f64>>() }).collect();
+        let chromosomes: Vec<Vec<f64>> = (0..num_individuals).map(|_| { (0..num_genes).map(|_| rng.gen_range(-10.0..10.0)).collect()}).collect();
         Population{ individuals: chromosomes }
     }
     ///shows the weights of the individuals
