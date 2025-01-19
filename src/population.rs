@@ -146,6 +146,7 @@ pub struct Population{
 impl Population{
     pub fn new(num_individuals:usize, num_genes:usize) ->Self{
         let mut rng = rand::thread_rng();
+        //TODO: here generates into (-10,10) range - (range: std::ops::Range<i32)
         let chromosomes: Vec<Vec<f64>> = (0..num_individuals).map(|_| { (0..num_genes).map(|_| rng.gen_range(-10.0..10.0)).collect()}).collect();
         Population{ individuals: chromosomes }
     }
