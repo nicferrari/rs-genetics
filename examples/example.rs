@@ -1,4 +1,4 @@
-use genetic_algorithms::population::GA;
+use genetic_algorithms::population_specific::GA;
 
 pub fn main() {
 /*Given the following function:
