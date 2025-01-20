@@ -3,18 +3,14 @@ use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 
 pub struct Population<I>{
-    individuals:Vec<I>,
-}
-
-pub trait Initialize<I> {
-    fn initialize(num_individuals:usize, num_genes:usize)->Population<I>;
+    pub individuals:Vec<I>,
 }
 
 pub struct TSP;
 
 //impl Initialize for Population<Vec<usize>>{
-impl Initialize<Vec<usize>> for TSP{
-     fn initialize(num_individuals:usize, num_genes:usize) -> Population<Vec<usize>> {
+impl TSP{
+     pub fn initialize(num_individuals:usize, num_genes:usize) -> Population<Vec<usize>> {
          let mut rng = thread_rng();
          let mut individuals = Vec::with_capacity(num_individuals);
          for _ in 0..num_individuals{
@@ -27,14 +23,6 @@ impl Initialize<Vec<usize>> for TSP{
 }
 
 pub struct Optimization;
-/*
-impl Initialize<Vec<f64>> for Optimization{
-    fn initialize(num_individuals: usize, num_genes: usize) -> Population<Vec<f64>> {
-        let mut rng = thread_rng();
-        let individuals:Vec<Vec<f64>> = (0..num_individuals).map(|_| { (0..num_genes).map(|_| rng.gen_range(-10.0..10.0)).collect()}).collect();
-        Population{individuals}
-    }
-}*/
 
 impl<I: std::fmt::Debug> Population<I>{
     pub fn inspect(&self){
@@ -49,14 +37,6 @@ impl<I> Population<I>{
         self.individuals=new_population
     }
 }
-/*
-impl Population<Vec<f64>>{
-    pub fn initialize_with_range(num_individuals: usize, num_genes: usize, range: Range<f64>) -> Self {
-        let mut rng = thread_rng();
-        let individuals:Vec<Vec<f64>> = (0..num_individuals).map(|_| { (0..num_genes).map(|_| rng.gen_range(range.clone())).collect()}).collect();
-        Population{individuals}
-    }
-}*/
 
 impl Optimization{
     pub fn initialize(num_individuals: usize, num_genes: usize, range: Range<f64>) -> Population<Vec<f64>> {
