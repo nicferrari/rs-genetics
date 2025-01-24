@@ -1,4 +1,4 @@
-use std::ops::{Index, Range};
+use std::ops::{Range};
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 
@@ -150,7 +150,7 @@ impl MutatePopulationOptimization<f64> for Population<Vec<f64>> {
         for i in 0..self.individuals.len(){
             for j in 0..self.individuals.first().unwrap().len(){
                 if rng.gen::<f64>() < mutation_rate{
-                    self.individuals[i][j]=rng.gen_range(-4.0..4.0);
+                    self.individuals[i][j]=rng.gen_range(range.clone());
                     //println!("Mutating {} gene for {} individual",j,i);
                 }
             }

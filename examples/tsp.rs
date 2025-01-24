@@ -2,7 +2,7 @@ use genetic_algorithms::GA::GA;
 use genetic_algorithms::population::{Crossover, MutatePopulationTSP, TSP};
 
 fn main() {
-    let population = TSP::initialize(10,5);
+    let population = TSP::initialize(100,5);
     struct City{x:f64,y:f64,};
     fn distance_(city1: &City, city2: &City) -> f64 {
         ((city1.x - city2.x).powi(2) + (city1.y - city2.y).powi(2)).sqrt()
@@ -33,4 +33,8 @@ fn main() {
     ga.population.inspect();
     ga.population.mutate_population_tsp(0.1);
     ga.population.inspect();
+    println!("-------------------------");
+    let eval = ga.step();
+    println!("{:?}",ga.evolve(1000));
+    ga.show_fittest();
 }
