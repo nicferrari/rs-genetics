@@ -1,4 +1,4 @@
-use std::ops::{Range};
+use std::ops::{Index, Range};
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 
@@ -63,7 +63,24 @@ impl<I> Population<I>{
         }
         selected_parents
     }
-
+    pub fn mate_population(&self) -> Vec<I>
+    where Self:Crossover<I>,
+        I:Clone,
+    {
+        println!("Mating population");
+        let mut selected_parents:Vec<I> = self.individuals.clone();
+        selected_parents.shuffle(& mut rand::thread_rng());
+        let mut new_population = Vec::new();
+        let mut selected_parents:Population<I> = Population{individuals:selected_parents};
+        for i in (0..self.individuals.len()).step_by(2){
+            if i+1 < selected_parents.individuals.len(){
+                let (child1, child2) = selected_parents.crossover(i, i+1);
+                new_population.push(child1);
+                new_population.push(child2);
+            }
+        }
+        new_population
+    }
 
 }
 
@@ -73,7 +90,6 @@ impl Optimization{
         let individuals:Vec<Vec<f64>> = (0..num_individuals).map(|_| { (0..num_genes).map(|_| rng.gen_range(range.clone())).collect()}).collect();
         Population{individuals}
     }
-
 }
 
 pub trait Crossover<I>{
@@ -123,5 +139,37 @@ impl Crossover<Vec<usize>> for Population<Vec<usize>>{
             }
         }
         (child1.into_iter().map(|x| x.unwrap()).collect(), child2.into_iter().map(|x| x.unwrap()).collect())
+    }
+}
+pub trait MutatePopulationOptimization<I>{
+    fn mutate_population_optimization(&mut self, mutation_rate:f64, range:Range<f64>);
+}
+impl MutatePopulationOptimization<f64> for Population<Vec<f64>> {
+    fn mutate_population_optimization(&mut self, mutation_rate:f64, range: Range<f64>){
+        let mut rng = rand::thread_rng();
+        for i in 0..self.individuals.len(){
+            for j in 0..self.individuals.first().unwrap().len(){
+                if rng.gen::<f64>() < mutation_rate{
+                    self.individuals[i][j]=rng.gen_range(-4.0..4.0);
+                    //println!("Mutating {} gene for {} individual",j,i);
+                }
+            }
+        }
+    }
+}
+pub trait MutatePopulationTSP<I>{
+    fn mutate_population_tsp(&mut self, mutation_rate:f64);
+}
+impl MutatePopulationTSP<usize> for Population<Vec<usize>>{
+    fn mutate_population_tsp(&mut self, mutation_rate: f64) {
+        let mut rng = rand::thread_rng();
+        for i in 0..self.individuals.len(){
+                if rng.gen::<f64>() < mutation_rate{
+                        let index1 = rng.gen_range(0..self.individuals[i].len());
+                        let index2 = rng.gen_range(0..self.individuals[i].len());
+                        self.individuals.swap(index1, index2);
+                        println!("Swapping {} and {} genes for individual {}",index1,index2,i);
+                }
+        }
     }
 }

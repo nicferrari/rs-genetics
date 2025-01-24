@@ -1,4 +1,4 @@
-use genetic_algorithms::population::{Crossover, Optimization, Population};
+use genetic_algorithms::population::{Crossover,MutatePopulationOptimization, Optimization, Population};
 use genetic_algorithms::GA::{GA};
 /*Given the following function:
 y = f(w1:w6) = w1x1 + w2x2 + w3x3 + w4x4 + w5x5 + 6wx6
@@ -23,4 +23,9 @@ fn main() {
     ga.population.update(selected_pop);
     ga.population.inspect();
     println!("{:?}",ga.population.crossover(0,1));
+    let mated_pop = ga.population.mate_population();
+    ga.population.update(mated_pop);
+    ga.population.inspect();
+    ga.population.mutate_population_optimization(0.1, -4.0..0.4);
+    ga.population.inspect();
 }
