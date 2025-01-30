@@ -1,5 +1,5 @@
 use genetic_algorithms::population::{Crossover,MutatePopulationOptimization, Optimization, Population};
-use genetic_algorithms::GA::{GA};
+use genetic_algorithms::ga::{GA};
 /*Given the following function:
 y = f(w1:w6) = w1x1 + w2x2 + w3x3 + w4x4 + w5x5 + 6wx6
 where (x1,x2,x3,x4,x5,x6)=(4,-2,3.5,5,-11,-4.7) and y=44

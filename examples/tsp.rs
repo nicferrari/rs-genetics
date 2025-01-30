@@ -1,4 +1,4 @@
-use genetic_algorithms::GA::GA;
+use genetic_algorithms::ga::GA;
 use genetic_algorithms::population::{Crossover, MutatePopulationTSP, TSP};
 
 fn main() {

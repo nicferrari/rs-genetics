@@ -1,5 +1,5 @@
 use genetic_algorithms::population::TSP;
-use genetic_algorithms::GA::GA;
+use genetic_algorithms::ga::GA;
 
 fn main() {
     fn calculate_fitness(weights: &Vec<usize>) -> f64 {
