@@ -1,15 +1,28 @@
 use genetic_algorithms::pop_generic::{GA, InitializationStrategy, RandomInitialization};
+use genetic_algorithms::pop_generic::Population;
 
 fn main() {
-
-    fn fitness(weights:&Vec<f64>)->f64{
-        let inputs = vec![4.,-2.,3.5,5.,-11.,-4.7];
-        let target = 44.;
-        let distance:f64 = inputs.iter().zip(weights.iter()).map(|(x,y)|x*y).collect::<Vec<f64>>().iter().sum();
-        return 1./(target-distance).abs();
+    fn fitness(weights: Population) -> f64 {
+        let inputs = vec![4.0, -2.0, 3.5, 5.0, -11.0, -4.7];
+        let target = 44.0;
+        match weights {
+            Population::F64(vec) => {
+                let distance: f64 = inputs.iter()
+                    .zip(&vec[0])
+                    .map(|(x, y)| x * y)
+                    .sum();
+                1.0 / (target - distance).abs()
+            }
+            _ => panic!("Expected Population::F64"),
+        }
     }
 
+
     let init_strategy = InitializationStrategy::F64(Box::new(RandomInitialization));
-    let ga = GA::new(init_strategy);
+    let mut ga = GA::new(init_strategy,fitness);
     ga.inspect();
+    let evals = ga.evaluate();
+    println!("evaluations = {:?}",evals);
+    ga.sort(evals);
+    println!("new evaluations = {:?}",ga.evaluate());
 }

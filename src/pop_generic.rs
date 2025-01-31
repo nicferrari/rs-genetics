@@ -53,12 +53,16 @@ pub enum Population{
     Usize(Vec<Vec<usize>>),
     F64(Vec<Vec<f64>>),
 }
-pub struct GA{
+pub struct GA<F>
+where F:Fn(Population)->f64{
     initialization: InitializationStrategy,
     population: Population,
+    fitness:F,
 }
-impl GA{
-    pub fn new(initialization:InitializationStrategy) -> Self{
+impl<F> GA<F>
+where F:Fn(Population)->f64{
+    ///initialize population based on an initialization strategy and a fitness function
+    pub fn new(initialization:InitializationStrategy, fitness:F) -> Self{
         let population = match &initialization {
             InitializationStrategy::Usize(init) =>{
                 Population::Usize(init.initialize(Config::default()))
@@ -67,9 +71,33 @@ impl GA{
                 Population::F64(init.initialize(Config::default()))
             }
         };
-        GA{initialization, population}
+        GA{initialization, population, fitness}
     }
     pub fn inspect(&self){
         println!("{:?}",self.population);
+    }
+    ///evaluate fitness of the whole population
+    pub fn evaluate(&self)->Vec<f64>{
+        let mut eval = vec![];
+        match &self.population {
+            Population::F64(individuals)=>{
+                for individual in individuals{
+                    eval.push((self.fitness)(Population::F64(vec![individual.clone()])));
+                }
+            }
+            _ =>{},
+        }
+        eval
+    }
+    ///sort population based on a input vector of fitness
+    pub fn sort(&mut self, evals:Vec<f64>){
+        match &self.population {
+            Population::F64(vec)=>{
+                let mut evaluated_individuals:Vec<(Vec<f64>,f64)> = vec.iter().cloned().zip(evals.into_iter()).collect();
+                evaluated_individuals.sort_by(|a,b| b.1.partial_cmp(&a.1).unwrap());
+                self.population = Population::F64(evaluated_individuals.into_iter().map(|(individual,_)|individual).collect(),)
+            }
+            _ => {}
+        }
     }
 }
