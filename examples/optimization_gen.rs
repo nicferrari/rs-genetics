@@ -1,5 +1,6 @@
 use genetic_algorithms::pop_generic::{GA, InitializationStrategy, RandomInitialization};
 use genetic_algorithms::pop_generic::Population;
+use genetic_algorithms::pop_generic::Crossover;
 
 fn main() {
     fn fitness(weights: Population) -> f64 {
@@ -17,7 +18,6 @@ fn main() {
         }
     }
 
-
     let init_strategy = InitializationStrategy::F64(Box::new(RandomInitialization));
     let mut ga = GA::new(init_strategy,fitness);
     ga.inspect();
@@ -25,4 +25,12 @@ fn main() {
     println!("evaluations = {:?}",evals);
     ga.sort(evals);
     println!("new evaluations = {:?}",ga.evaluate());
+    let selected = ga.rank_selection_cdf();
+    println!("selected parents = {:?}",selected);
+    ga.update(selected);
+    ga.inspect();
+    println!("xover between individual 1 and 2 = {:?}",ga.population.crossover(1,2));
+    let mated_pop = ga.mate_population();
+    ga.update(mated_pop);
+    ga.inspect();
 }
