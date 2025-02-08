@@ -1,4 +1,4 @@
-use genetic_algorithms::pop_generic::{Config, GA, InitializationStrategy, RandomInitialization};
+use genetic_algorithms::pop_generic::{Config, GA, InitializationStrategy, RandomInitialization, GetPopulation};
 use genetic_algorithms::pop_generic::Population;
 
 fn main() {
@@ -43,7 +43,7 @@ fn main() {
     ga.evolve(100);
     let inputs = vec![4.0, -2.0, 3.5, 5.0, -11.0, -4.7];
     let distance: f64 = inputs.iter()
-        .zip(&ga.population.get_individuals().unwrap()[0])
+        .zip(&ga.population.get_individual(0).unwrap())
         .map(|(x, y)| x * y)
         .sum();
     println!("Solution = {}",distance);

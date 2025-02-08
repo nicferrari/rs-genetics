@@ -1,5 +1,4 @@
 use std::ops::Range;
-use std::process::Output;
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 use crate::pop_generic::Population::{F64, Usize};
@@ -10,6 +9,7 @@ pub trait Initialization<T>{
 }
 ///struct used to change configuration
 /// there is a Default configuration
+#[derive(Clone)]
 pub struct Config{
     pub num_individuals:usize,
     pub num_genes:usize,
@@ -58,14 +58,15 @@ pub enum Population{
     Usize(Vec<Vec<usize>>),
     F64(Vec<Vec<f64>>),
 }
-impl Population{
-    pub fn get_individual_at(&self, index:usize)->Option<Vec<f64>>{
+impl Population {
+    pub fn get_individual_at(&self, index: usize) -> Option<Vec<f64>> {
         match self {
             Population::F64(vec) => vec.get(index).cloned(),
             _ => None,
         }
     }
-    pub fn get_individuals(&self)->Option<Vec<Vec<f64>>>{
+    //made obsolete by trait GetPopulation
+    pub fn get_individuals(&self) -> Option<Vec<Vec<f64>>> {
         match self {
             Population::F64(vec) => Some(vec.clone()),
             _ => None,
@@ -73,12 +74,12 @@ impl Population{
     }
 }
 
-
 pub struct GA<F>
 where F:Fn(Population)->f64{
     initialization: InitializationStrategy,
     pub population: Population,
     fitness:F,
+    config: Config,
 }
 impl<F> GA<F>
 where F:Fn(Population)->f64{
@@ -86,13 +87,13 @@ where F:Fn(Population)->f64{
     pub fn new(initialization:InitializationStrategy, fitness:F, config: Config) -> Self{
         let population = match &initialization {
             InitializationStrategy::Usize(init) =>{
-                Population::Usize(init.initialize(config))
+                Population::Usize(init.initialize(config.clone()))
             }
             InitializationStrategy::F64(init) =>{
-                Population::F64(init.initialize(config))
+                Population::F64(init.initialize(config.clone()))
             }
         };
-        GA{initialization, population, fitness}
+        GA{initialization, population, fitness, config}
     }
     pub fn inspect(&self){
         println!("{:?}",self.population);
@@ -197,7 +198,20 @@ where F:Fn(Population)->f64{
                 }
                 F64(new_population)
             }
-            _ => unimplemented!(),
+            Usize(vec)=> {
+                let mut selected_parents = vec.clone();
+                selected_parents.shuffle(&mut rand::thread_rng());
+                let mut new_population = Vec::new();
+                let selected_parents = Population::Usize(selected_parents);
+                for i in (0..vec.len()).step_by(2) {
+                    if i + 1 < vec.len() {
+                        let (child1, child2) = selected_parents.crossover(i, i + 1);
+                        new_population.push(child1);
+                        new_population.push(child2);
+                    }
+                }
+                Usize(new_population)
+            }
         }
     }
     pub fn mutate(&mut self) ->Population{
@@ -207,7 +221,7 @@ where F:Fn(Population)->f64{
                 let mut rng = rand::thread_rng();
                 for i in 0..old_pop.len(){
                     for j in 0..old_pop.first().unwrap().len(){
-                        if rng.gen::<f64>() < Config::default().mutation_rate{
+                        if rng.gen::<f64>() < self.config.mutation_rate{
                             old_pop[i][j]=rng.gen_range(Config::default().range.clone());
                             //println!("Mutating {} gene for {} individual",j,i);
                         }
@@ -215,7 +229,19 @@ where F:Fn(Population)->f64{
                 }
                 Population::F64(old_pop)
             }
-            _ => unimplemented!(),
+            Usize(vec)=>{
+                let mut old_pop = vec.clone();
+                let mut rng = rand::thread_rng();
+                for i in 0..old_pop.len(){
+                    if rng.gen::<f64>() < self.config.mutation_rate{
+                        let index1 = rng.gen_range(0..old_pop[i].len());
+                        let index2 = rng.gen_range(0..old_pop[i].len());
+                        old_pop[i].swap(index1, index2);
+                        //println!("Swapping {} and {} genes for individual {}",index1,index2,i);
+                    }
+                }
+                Population::Usize(old_pop)
+            }
         }
     }
     pub fn step(&mut self)->f64{
@@ -249,13 +275,11 @@ where F:Fn(Population)->f64{
         hist
     }
 }
-pub trait Crossover{
-    type Output;
-    fn crossover(&self, index1:usize, index2:usize)->(Self::Output, Self::Output);
+pub trait Crossover<T>{
+    fn crossover(&self, index1:usize, index2:usize)->(T,T);
 }
-impl Crossover for Population{
-    type Output = Vec<f64>;
-     fn crossover(&self, parent1_index: usize, parent2_index: usize) -> (Self::Output, Self::Output) {
+impl Crossover<Vec<f64>> for Population{
+     fn crossover(&self, parent1_index: usize, parent2_index: usize) -> (Vec<f64>,Vec<f64>) {
         match &self{
             Population::F64(vec)=>{
                 let gene_length = vec[parent1_index].len();
@@ -267,6 +291,62 @@ impl Crossover for Population{
                 (child1_genes,child2_genes)
             }
         _ => unimplemented!()
+        }
+    }
+}
+impl Crossover<Vec<usize>> for Population {
+    fn crossover(&self, parent1_index: usize, parent2_index: usize) -> (Vec<usize>, Vec<usize>) {
+        match self{
+        Population::Usize(vec)=>{
+            let size = vec[parent1_index].len();
+            let mut child1 = vec![None; size];
+            let mut child2 = vec![None; size];
+            let mut rng = rand::thread_rng();
+            let start = rng.gen_range(0..size);
+            let end = rng.gen_range(start..size);
+            // Copy the crossover section from parent1 to child1 and from parent2 to child2
+            for i in start..=end {
+                child1[i] = Some(vec[parent1_index][i]);
+                child2[i] = Some(vec[parent2_index][i]);
+            }
+            // Fill the rest of child1 from parent2 maintaining the order
+            let mut current_index1 = (end + 1) % size;
+            for &gene in vec[parent2_index].iter() {
+                if !child1.contains(&Some(gene)) {
+                    child1[current_index1] = Some(gene);
+                    current_index1 = (current_index1 + 1) % size;
+                }
+            }
+            // Fill the rest of child2 from parent1 maintaining the order
+            let mut current_index2 = (end + 1) % size;
+            for &gene in vec[parent1_index].iter() {
+                if !child2.contains(&Some(gene)) {
+                    child2[current_index2] = Some(gene);
+                    current_index2 = (current_index2 + 1) % size;
+                }
+            }
+            (child1.into_iter().map(|x| x.unwrap()).collect(), child2.into_iter().map(|x| x.unwrap()).collect())
+        }
+            _ => unimplemented!()
+        }
+    }
+}
+pub trait GetPopulation<T>{
+    fn get_individual(&self, index:usize)->Option<Vec<T>>;
+}
+impl GetPopulation<f64> for Population{
+    fn get_individual(&self, index: usize) -> Option<Vec<f64>> {
+        match self {
+            F64(vec)=>vec.get(index).cloned(),
+            _=>None,
+        }
+    }
+}
+impl GetPopulation<usize> for Population{
+    fn get_individual(&self, index: usize) -> Option<Vec<usize>> {
+        match self {
+            Usize(vec)=>vec.get(index).cloned(),
+            _=>None,
         }
     }
 }

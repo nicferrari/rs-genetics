@@ -1,4 +1,4 @@
-use genetic_algorithms::pop_generic::{Config, GA, InitializationStrategy, Population, TSPInitialization};
+use genetic_algorithms::pop_generic::{Config, Crossover, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
 
 fn main() {
     struct City{x:f64,y:f64,};
@@ -23,8 +23,10 @@ fn main() {
 
     let init_strategy = InitializationStrategy::Usize(Box::new(TSPInitialization));
     let mut config = Config::default();
+    config.num_individuals=100;
     config.num_genes = 5;
     let mut ga = GA::new(init_strategy, total_distance, config);
+    /*
     ga.inspect();
     let evals = ga.evaluate();
     println!("evaluations = {:?}",evals);
@@ -34,5 +36,16 @@ fn main() {
     println!("selected parents = {:?}",selected);
     ga.update(selected);
     ga.inspect();
-    //println!("xover between individual 1 and 2 = {:?}",ga.population.crossover(1,2));
+    let result:(Vec<usize>,Vec<usize>) = ga.population.crossover(1,2);
+    println!("xover between individual 1 and 2 = {:?}",result);
+    let mated_pop = ga.mate_population();
+    ga.update(mated_pop);
+    ga.inspect();
+    println!("_________________");
+    let mutated_pop = ga.mutate();
+    ga.update(mutated_pop);
+    ga.inspect();*/
+    ga.evolve(100);
+    let solution:Vec<usize> = ga.population.get_individual(0).unwrap();
+    println!("Solution = {:?}",solution);
 }
