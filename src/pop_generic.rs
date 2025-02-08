@@ -3,6 +3,7 @@ use std::process::Output;
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 use crate::pop_generic::Population::F64;
+use std::time::Instant;
 
 pub trait Initialization<T>{
     fn initialize(&self, config: Config) -> T;
@@ -13,14 +14,16 @@ pub struct Config{
     num_individuals:usize,
     num_genes:usize,
     range:Range<f64>,
+    mutation_rate:f64,
 }
 ///default configuration
 impl Default for Config{
     fn default() -> Self {
         Config{
-            num_individuals:10,
+            num_individuals:100,
             num_genes:10,
             range: -10.0..10.0,
+            mutation_rate:0.1,
         }
     }
 }
@@ -55,6 +58,22 @@ pub enum Population{
     Usize(Vec<Vec<usize>>),
     F64(Vec<Vec<f64>>),
 }
+impl Population{
+    pub fn get_individual_at(&self, index:usize)->Option<Vec<f64>>{
+        match self {
+            Population::F64(vec) => vec.get(index).cloned(),
+            _ => None,
+        }
+    }
+    pub fn get_individuals(&self)->Option<Vec<Vec<f64>>>{
+        match self {
+            Population::F64(vec) => Some(vec.clone()),
+            _ => None,
+        }
+    }
+}
+
+
 pub struct GA<F>
 where F:Fn(Population)->f64{
     initialization: InitializationStrategy,
@@ -152,6 +171,53 @@ where F:Fn(Population)->f64{
             }
             _ => unimplemented!(),
         }
+    }
+    pub fn mutate(&mut self) ->Population{
+        match &self.population {
+            F64(vec)=>{
+                let mut old_pop = vec.clone();
+                let mut rng = rand::thread_rng();
+                for i in 0..old_pop.len(){
+                    for j in 0..old_pop.first().unwrap().len(){
+                        if rng.gen::<f64>() < Config::default().mutation_rate{
+                            old_pop[i][j]=rng.gen_range(Config::default().range.clone());
+                            //println!("Mutating {} gene for {} individual",j,i);
+                        }
+                    }
+                }
+                Population::F64(old_pop)
+            }
+            _ => unimplemented!(),
+        }
+    }
+    pub fn step(&mut self)->f64{
+        let mut evals = self.evaluate();
+        self.sort(evals.clone());
+        print!("Initial score = {} .... evolving ...",evals[0].clone());
+        let selected = self.rank_selection_cdf();
+        self.update(selected);
+        let mated_pop = self.mate_population();
+        self.update(mated_pop);
+        let mutated_pop = self.mutate();
+        self.update(mutated_pop);
+        evals = self.evaluate();
+        self.sort(evals.clone());
+        print!("... final score = {:?}",evals[0]);
+        evals[0].clone()
+    }
+    pub fn evolve(&mut self, num_steps:usize) ->Vec<f64>{
+        let start_time = Instant::now();
+        let mut hist=Vec::new();
+        for i in 0..num_steps{
+            println!();
+            println!("Step {}",i);
+            hist.push(self.step());
+        }
+        let end_time = Instant::now();
+        let duration = end_time.duration_since(start_time);
+        println!();
+        println!("Elapsed_time = {:?}",duration);
+        hist
     }
 }
 pub trait Crossover{
