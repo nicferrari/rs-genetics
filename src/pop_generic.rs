@@ -2,7 +2,7 @@ use std::ops::Range;
 use std::process::Output;
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
-use crate::pop_generic::Population::F64;
+use crate::pop_generic::Population::{F64, Usize};
 use std::time::Instant;
 
 pub trait Initialization<T>{
@@ -11,16 +11,16 @@ pub trait Initialization<T>{
 ///struct used to change configuration
 /// there is a Default configuration
 pub struct Config{
-    num_individuals:usize,
-    num_genes:usize,
-    range:Range<f64>,
-    mutation_rate:f64,
+    pub num_individuals:usize,
+    pub num_genes:usize,
+    pub range:Range<f64>,
+    pub mutation_rate:f64,
 }
 ///default configuration
 impl Default for Config{
     fn default() -> Self {
         Config{
-            num_individuals:100,
+            num_individuals:10,
             num_genes:10,
             range: -10.0..10.0,
             mutation_rate:0.1,
@@ -83,13 +83,13 @@ where F:Fn(Population)->f64{
 impl<F> GA<F>
 where F:Fn(Population)->f64{
     ///initialize population based on an initialization strategy and a fitness function
-    pub fn new(initialization:InitializationStrategy, fitness:F) -> Self{
+    pub fn new(initialization:InitializationStrategy, fitness:F, config: Config) -> Self{
         let population = match &initialization {
             InitializationStrategy::Usize(init) =>{
-                Population::Usize(init.initialize(Config::default()))
+                Population::Usize(init.initialize(config))
             }
             InitializationStrategy::F64(init) =>{
-                Population::F64(init.initialize(Config::default()))
+                Population::F64(init.initialize(config))
             }
         };
         GA{initialization, population, fitness}
@@ -106,7 +106,11 @@ where F:Fn(Population)->f64{
                     eval.push((self.fitness)(Population::F64(vec![individual.clone()])));
                 }
             }
-            _ =>{},
+            Population::Usize(individuals)=>{
+                for individual in individuals{
+                    eval.push((self.fitness)(Population::Usize(vec![individual.clone()])));
+                }
+            }
         }
         eval
     }
@@ -118,7 +122,11 @@ where F:Fn(Population)->f64{
                 evaluated_individuals.sort_by(|a,b| b.1.partial_cmp(&a.1).unwrap());
                 self.population = Population::F64(evaluated_individuals.into_iter().map(|(individual,_)|individual).collect(),)
             }
-            _ => {}
+            Population::Usize(vec)=> {
+                let mut evaluated_individuals: Vec<(Vec<usize>, f64)> = vec.iter().cloned().zip(evals.into_iter()).collect();
+                evaluated_individuals.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+                self.population = Population::Usize(evaluated_individuals.into_iter().map(|(individual, _)| individual).collect(), )
+            }
         }
     }
     ///update population from a provided one
@@ -149,7 +157,27 @@ where F:Fn(Population)->f64{
                 }
                 F64(selected_parents)
             }
-            _ => unimplemented!(),
+            Population::Usize(vec)=>{
+                let total_rank: f64 = (1..=vec.len()).map(|i| i as f64).sum();
+                let mut selected_parents = Vec::with_capacity(vec.len());
+                let mut sum = 0.0;
+                let mut cumulative_prob = Vec::with_capacity(vec.len());
+                for (rank, individual) in vec.iter().enumerate() {
+                    sum += (vec.len() - rank) as f64 / total_rank;
+                    cumulative_prob.push((sum, individual.clone()));  // Clone the individual
+                }
+                for _ in 0..vec.len() {
+                    let rand_num: f64 = rand::random::<f64>();
+                    for &(prob, ref individual) in &cumulative_prob {
+                        if rand_num < prob {
+                            // Adding cloned individual to the selected parents
+                            selected_parents.push(individual.clone());
+                            break;
+                        }
+                    }
+                }
+                Usize(selected_parents)
+            }
         }
     }
     ///shuffle population and perform crossover
@@ -159,7 +187,7 @@ where F:Fn(Population)->f64{
                 let mut selected_parents= vec.clone();
                 selected_parents.shuffle(& mut rand::thread_rng());
                 let mut new_population = Vec::new();
-                let mut selected_parents = Population::F64(selected_parents);
+                let selected_parents = Population::F64(selected_parents);
                 for i in (0..vec.len()).step_by(2){
                     if i+1 < vec.len(){
                         let (child1, child2) = selected_parents.crossover(i, i+1);
@@ -202,6 +230,7 @@ where F:Fn(Population)->f64{
         self.update(mutated_pop);
         evals = self.evaluate();
         self.sort(evals.clone());
+        evals = self.evaluate();
         print!("... final score = {:?}",evals[0]);
         evals[0].clone()
     }
@@ -237,7 +266,7 @@ impl Crossover for Population{
                 child2_genes.extend_from_slice(&vec[parent1_index][crossover_point..]);
                 (child1_genes,child2_genes)
             }
-            _ => unimplemented!()
+        _ => unimplemented!()
         }
     }
 }

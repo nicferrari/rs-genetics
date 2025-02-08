@@ -1,7 +1,5 @@
 use genetic_algorithms::pop_generic::{Config, GA, InitializationStrategy, RandomInitialization};
 use genetic_algorithms::pop_generic::Population;
-use genetic_algorithms::pop_generic::Crossover;
-use genetic_algorithms::pop_generic::Population::F64;
 
 fn main() {
     fn fitness(weights: Population) -> f64 {
@@ -21,7 +19,9 @@ fn main() {
     }
 
     let init_strategy = InitializationStrategy::F64(Box::new(RandomInitialization));
-    let mut ga = GA::new(init_strategy,fitness);
+    let mut config = Config::default();
+    config.num_individuals = 1000;
+    let mut ga = GA::new(init_strategy,fitness, config);
     /*
     ga.inspect();
     let evals = ga.evaluate();
@@ -42,7 +42,6 @@ fn main() {
     ga.inspect();*/
     ga.evolve(100);
     let inputs = vec![4.0, -2.0, 3.5, 5.0, -11.0, -4.7];
-    let target = 44.0;
     let distance: f64 = inputs.iter()
         .zip(&ga.population.get_individuals().unwrap()[0])
         .map(|(x, y)| x * y)
