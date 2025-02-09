@@ -1,4 +1,4 @@
-use genetic_algorithms::pop_generic::{Config, Crossover, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
+use genetic_algorithms::pop_generic::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
 
 fn main() {
     struct City{x:f64,y:f64,};
@@ -7,7 +7,9 @@ fn main() {
     }
     fn total_distance(weights: Population) -> f64 {
         //solving for 5-points star
-        let cities = vec![City{x:0.,y:0.},City{x:1.,y:2.},City{x:4.,y:1.},City{x:2.,y:-1.},City{x:1.,y:-2.}];
+        //let cities = vec![City{x:0.,y:0.},City{x:1.,y:2.},City{x:4.,y:1.},City{x:2.,y:-1.},City{x:1.,y:-2.}];
+        //historical europe tour: Rome, Paris, Athens, Berlin, London, Vienna
+        let cities = vec![City{x:41.9028,y:12.4964},City{x:48.8566,y:2.3522},City{x:37.9838,y:23.7275},City{x:52.5200,y:13.4050},City{x:51.5074,y:-0.1278},City{x:48.2082,y:16.3738}];
         let mut distance = 0.0;
         match weights {
             Population::Usize(vec)=>{
@@ -24,7 +26,7 @@ fn main() {
     let init_strategy = InitializationStrategy::Usize(Box::new(TSPInitialization));
     let mut config = Config::default();
     config.num_individuals=100;
-    config.num_genes = 5;
+    config.num_genes = 6;
     let mut ga = GA::new(init_strategy, total_distance, config);
     /*
     ga.inspect();
