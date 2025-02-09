@@ -1,4 +1,4 @@
-use genetic_algorithms::pop_generic::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
+use genetic_algorithms::population::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
 
 fn main() {
     struct City{x:f64,y:f64,};

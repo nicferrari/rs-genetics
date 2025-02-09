@@ -1,5 +1,5 @@
-use genetic_algorithms::pop_generic::{Config, GA, InitializationStrategy, RandomInitialization, GetPopulation};
-use genetic_algorithms::pop_generic::Population;
+use genetic_algorithms::population::{Config, GA, InitializationStrategy, RandomInitialization, GetPopulation};
+use genetic_algorithms::population::Population;
 
 fn main() {
     fn fitness(weights: Population) -> f64 {

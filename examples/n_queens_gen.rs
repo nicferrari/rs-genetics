@@ -1,4 +1,4 @@
-use genetic_algorithms::pop_generic::{Config, GA, InitializationStrategy, TSPInitialization, GetPopulation, Population};
+use genetic_algorithms::population::{Config, GA, InitializationStrategy, TSPInitialization, GetPopulation, Population};
 fn main() {
     fn calculate_fitness(weights: Population) -> f64 {
         match weights {
