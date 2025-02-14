@@ -1,3 +1,4 @@
+use genetic_algorithms::plot::draw_fitness;
 use genetic_algorithms::population::{Config, GA, InitializationStrategy, TSPInitialization, GetPopulation, Population};
 fn main() {
     fn calculate_fitness(weights: Population) -> f64 {
@@ -28,7 +29,8 @@ fn main() {
     config.num_individuals=100;
     config.num_genes = num_queens;
     let mut ga = GA::new(init_strategy, calculate_fitness, config);
-    ga.evolve(100);
+    let hist = ga.evolve(100);
     let solution:Vec<usize> = ga.population.get_individual(0).unwrap();
     println!("Solution = {:?}",solution);
+    draw_fitness(hist);
 }

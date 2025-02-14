@@ -1,3 +1,4 @@
+use genetic_algorithms::plot::draw_fitness;
 use genetic_algorithms::population::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
 
 fn main() {
@@ -47,7 +48,8 @@ fn main() {
     let mutated_pop = ga.mutate();
     ga.update(mutated_pop);
     ga.inspect();*/
-    ga.evolve(100);
+    let hist = ga.evolve(100);
     let solution:Vec<usize> = ga.population.get_individual(0).unwrap();
     println!("Solution = {:?}",solution);
+    draw_fitness(hist);
 }

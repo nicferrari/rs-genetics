@@ -57,21 +57,6 @@ pub enum Population{
     Usize(Vec<Vec<usize>>),
     F64(Vec<Vec<f64>>),
 }
-impl Population {
-    pub fn get_individual_at(&self, index: usize) -> Option<Vec<f64>> {
-        match self {
-            Population::F64(vec) => vec.get(index).cloned(),
-            _ => None,
-        }
-    }
-    //made obsolete by trait GetPopulation
-    pub fn get_individuals(&self) -> Option<Vec<Vec<f64>>> {
-        match self {
-            Population::F64(vec) => Some(vec.clone()),
-            _ => None,
-        }
-    }
-}
 
 pub struct GA<F>
 where F:Fn(Population)->f64{

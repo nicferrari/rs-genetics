@@ -1,5 +1,7 @@
+use genetic_algorithms::plot;
 use genetic_algorithms::population::{Config, GA, InitializationStrategy, RandomInitialization, GetPopulation};
 use genetic_algorithms::population::Population;
+use plot::draw_fitness;
 
 fn main() {
     fn fitness(weights: Population) -> f64 {
@@ -40,11 +42,12 @@ fn main() {
     let mutated_pop = ga.mutate();
     ga.update(mutated_pop);
     ga.inspect();*/
-    ga.evolve(100);
+    let hist = ga.evolve(100);
     let inputs = vec![4.0, -2.0, 3.5, 5.0, -11.0, -4.7];
     let distance: f64 = inputs.iter()
         .zip(&ga.population.get_individual(0).unwrap())
         .map(|(x, y)| x * y)
         .sum();
     println!("Solution = {}",distance);
+    draw_fitness(hist);
 }
