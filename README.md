@@ -1,5 +1,5 @@
 # rs-genetics
-[![Latest version](https://img.shields.io/crates/v/rs-genetic.svg)](https://crates.io/crates/rs-backtester)
+[![Latest version](https://img.shields.io/crates/v/rs-genetics.svg)](https://crates.io/crates/rs-genetics)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](https://github.com/nicferrari/rs-backtester/blob/master/LICENSE-APACHE-2.0)
 
 rs-genetics is a genetic algorithm library written entirely in Rust.
