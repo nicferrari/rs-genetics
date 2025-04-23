@@ -1,6 +1,9 @@
 [package]
-name = "genetic_algorithms"
+name = "rs-genetics"
 version = "0.1.0"
+description = "Genetic algorithms library"
+license = "Apache-2.0"
+repository = "https://github.com/nicferrari/rs-geneticscar"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
