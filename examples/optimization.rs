@@ -1,6 +1,6 @@
-use genetic_algorithms::plot;
-use genetic_algorithms::population::{Config, GA, InitializationStrategy, RandomInitialization, GetPopulation};
-use genetic_algorithms::population::Population;
+use rs_genetics::plot;
+use rs_genetics::population::{Config, GA, InitializationStrategy, RandomInitialization, GetPopulation};
+use rs_genetics::population::Population;
 use plot::draw_fitness;
 
 fn main() {

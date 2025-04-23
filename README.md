@@ -5,7 +5,7 @@
 rs-genetics is a genetic algorithm library written entirely in Rust.
 
 ## Get started
-- define a fitness function which inputs a Population and output an f64 (F:Fn(Population)->f64)
+- define a fitness function which inputs a Population and outputs an f64 (F:Fn(Population)->f64)
 ```rust
     fn fitness(weights: Population) -> f64 {
         let inputs = vec![4.0, -2.0, 3.5, 5.0, -11.0, -4.7];

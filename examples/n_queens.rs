@@ -1,5 +1,5 @@
-use genetic_algorithms::plot::draw_fitness;
-use genetic_algorithms::population::{Config, GA, InitializationStrategy, TSPInitialization, GetPopulation, Population};
+use rs_genetics::plot::draw_fitness;
+use rs_genetics::population::{Config, GA, InitializationStrategy, TSPInitialization, GetPopulation, Population};
 fn main() {
     fn calculate_fitness(weights: Population) -> f64 {
         match weights {

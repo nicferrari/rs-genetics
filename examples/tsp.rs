@@ -1,5 +1,5 @@
-use genetic_algorithms::plot::draw_fitness;
-use genetic_algorithms::population::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
+use rs_genetics::plot::draw_fitness;
+use rs_genetics::population::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
 
 fn main() {
     struct City{x:f64,y:f64,};
