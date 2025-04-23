@@ -32,5 +32,5 @@ fn main() {
     let hist = ga.evolve(100);
     let solution:Vec<usize> = ga.population.get_individual(0).unwrap();
     println!("Solution = {:?}",solution);
-    draw_fitness(hist);
+    draw_fitness(hist, "fitness_curve.png");
 }

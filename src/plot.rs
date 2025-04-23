@@ -1,9 +1,11 @@
+use std::env;
 use plotters::prelude::*;
 
-pub fn draw_fitness(fitness_curve:Vec<f64>) {
+///function to draw a given fitness curve passed as an input parameter
+pub fn draw_fitness(fitness_curve:Vec<f64>, filename:&str) {
 
     // Create a drawing area
-    let root_area = BitMapBackend::new("fitness_curve.png", (800, 600))
+    let root_area = BitMapBackend::new(filename, (800, 600))
         .into_drawing_area();
     root_area.fill(&WHITE).unwrap();
 
@@ -44,4 +46,5 @@ pub fn draw_fitness(fitness_curve:Vec<f64>) {
 
     // Save the plot as an image
     root_area.present().unwrap();
+    println!("File saved as = {:?}",env::current_dir().unwrap().into_os_string().into_string().unwrap()+filename);
 }

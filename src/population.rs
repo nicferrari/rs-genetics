@@ -6,7 +6,7 @@ use std::time::Instant;
 pub trait Initialization<T>{
     fn initialize(&self, config: Config) -> T;
 }
-///struct used to change configuration
+///struct used to change configuration<BR>
 /// there is a Default configuration
 #[derive(Clone)]
 pub struct Config{
@@ -79,6 +79,7 @@ where F:Fn(Population)->f64{
         };
         GA{initialization, population, fitness, config}
     }
+    ///print population
     pub fn inspect(&self){
         println!("{:?}",self.population);
     }
@@ -114,7 +115,7 @@ where F:Fn(Population)->f64{
             }
         }
     }
-    ///update population from a provided one
+    ///update population with a provided one
     pub fn update(&mut self, new_population:Population){
         self.population = new_population
     }
@@ -198,6 +199,7 @@ where F:Fn(Population)->f64{
             }
         }
     }
+    ///mutate population
     pub fn mutate(&mut self) ->Population{
         match &self.population {
             Population::F64(vec)=>{
@@ -228,6 +230,14 @@ where F:Fn(Population)->f64{
             }
         }
     }
+    ///evolve population forward by one step<BR>
+    /// in particular:<BR>
+    /// evaluate population<BR>
+    /// select population to mate<BR>
+    /// mate<BR>
+    /// mutate<BR>
+    /// evaluate again population<BR>
+    /// returns new score of updated population<BR>
     pub fn step(&mut self)->f64{
         let mut evals = self.evaluate();
         self.sort(evals.clone());
@@ -244,6 +254,7 @@ where F:Fn(Population)->f64{
         print!("... final score = {:?}",evals[0]);
         evals[0].clone()
     }
+    ///execute num_steps forward of evolution, return a vector of scores (curve of fitness)
     pub fn evolve(&mut self, num_steps:usize) ->Vec<f64>{
         let start_time = Instant::now();
         let mut hist=Vec::new();
