@@ -21,7 +21,7 @@ impl Default for Config{
         Config{
             num_individuals:10,
             num_genes:10,
-            range: -10.0..10.0,
+            range: -10.0..10.0,//only used in Initialization<Vec<Vec<f64>>>
             mutation_rate:0.1,
         }
     }
@@ -29,6 +29,7 @@ impl Default for Config{
 
 pub struct RandomInitialization;
 pub struct TSPInitialization;
+pub struct SudokuInitialization;
 impl Initialization<Vec<Vec<usize>>> for TSPInitialization{
     fn initialize(&self, config: Config) -> Vec<Vec<usize>> {
         let mut rng = thread_rng();
@@ -45,6 +46,18 @@ impl Initialization<Vec<Vec<f64>>> for RandomInitialization{
     fn initialize(&self, config: Config) -> Vec<Vec<f64>> {
         let mut rng = thread_rng();
         let individuals:Vec<Vec<f64>> = (0..config.num_individuals).map(|_| { (0..config.num_genes).map(|_| rng.gen_range(config.range.clone())).collect()}).collect();
+        individuals
+    }
+}
+impl Initialization<Vec<Vec<usize>>> for SudokuInitialization{
+    fn initialize(&self, config: Config) -> Vec<Vec<usize>> {
+        let mut rng = thread_rng();
+        let mut individuals = Vec::with_capacity(config.num_individuals);
+        for _ in 0..config.num_individuals{
+            let mut individual:Vec<usize> = (0..81).map(|_|rng.gen_range(0..10)).collect();
+            //individual.shuffle(&mut rng);
+            individuals.push(individual);
+        }
         individuals
     }
 }
@@ -289,8 +302,9 @@ impl Crossover<Vec<f64>> for Population{
         }
     }
 }
+/*
 impl Crossover<Vec<usize>> for Population {
-    fn crossover(&self, parent1_index: usize, parent2_index: usize) -> (Vec<usize>, Vec<usize>) {
+    fn crossover_old(&self, parent1_index: usize, parent2_index: usize) -> (Vec<usize>, Vec<usize>) {
         match self{
         Population::Usize(vec)=>{
             let size = vec[parent1_index].len();
@@ -304,18 +318,20 @@ impl Crossover<Vec<usize>> for Population {
                 child1[i] = Some(vec[parent1_index][i]);
                 child2[i] = Some(vec[parent2_index][i]);
             }
-            // Fill the rest of child1 from parent2 maintaining the order
+            // Fill the rest of child1 from parent2 maintaining the order (with loop back to start of vector)
             let mut current_index1 = (end + 1) % size;
             for &gene in vec[parent2_index].iter() {
-                if !child1.contains(&Some(gene)) {
+//                if !child1.contains(&Some(gene)) {
+                if child1[current_index1].is_none(){
                     child1[current_index1] = Some(gene);
                     current_index1 = (current_index1 + 1) % size;
                 }
             }
-            // Fill the rest of child2 from parent1 maintaining the order
+            // Fill the rest of child2 from parent1 maintaining the order (with loop back to start of vector)
             let mut current_index2 = (end + 1) % size;
             for &gene in vec[parent1_index].iter() {
-                if !child2.contains(&Some(gene)) {
+//                if !child2.contains(&Some(gene)) {
+                if child2[current_index2].is_none(){
                     child2[current_index2] = Some(gene);
                     current_index2 = (current_index2 + 1) % size;
                 }
@@ -326,6 +342,64 @@ impl Crossover<Vec<usize>> for Population {
         }
     }
 }
+*/
+use std::collections::HashMap;
+
+impl Crossover<Vec<usize>> for Population {
+    fn crossover(&self, parent1_index: usize, parent2_index: usize) -> (Vec<usize>, Vec<usize>) {
+        match self {
+            Population::Usize(vec) => {
+                let size = vec[parent1_index].len();
+                let mut child1 = vec![None; size];
+                let mut child2 = vec![None; size];
+                let mut rng = rand::thread_rng();
+                let start = rng.gen_range(0..size);
+                let end = rng.gen_range(start..size);
+
+                // Crossover Section
+                for i in start..=end {
+                    child1[i] = Some(vec[parent1_index][i]);
+                    child2[i] = Some(vec[parent2_index][i]);
+                }
+
+                // Create frequency maps for tracking duplicates
+                let mut freq_map_child1 = HashMap::new();
+                let mut freq_map_child2 = HashMap::new();
+
+                let mut current_index1 = (end + 1) % size;
+                let mut current_index2 = (end + 1) % size;
+
+                for &gene in &vec[parent2_index] {
+                    let count_child1 = freq_map_child1.entry(gene).or_insert(0);
+                    if !child1[current_index1].is_some() && *count_child1 < count_occurrences(gene, &vec[parent2_index]) {
+                        child1[current_index1] = Some(gene);
+                        *count_child1 += 1;
+                        current_index1 = (current_index1 + 1) % size;
+                    }
+                }
+
+                for &gene in &vec[parent1_index] {
+                    let count_child2 = freq_map_child2.entry(gene).or_insert(0);
+                    if !child2[current_index2].is_some() && *count_child2 < count_occurrences(gene, &vec[parent1_index]) {
+                        child2[current_index2] = Some(gene);
+                        *count_child2 += 1;
+                        current_index2 = (current_index2 + 1) % size;
+                    }
+                }
+
+                (child1.into_iter().map(|x| x.unwrap()).collect(), child2.into_iter().map(|x| x.unwrap()).collect())
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+
+// Helper function to count occurrences of a value
+fn count_occurrences(value: usize, vec: &Vec<usize>) -> usize {
+    vec.iter().filter(|&&x| x == value).count()
+}
+
+
 pub trait GetPopulation<T>{
     fn get_individual(&self, index:usize)->Option<Vec<T>>;
 }

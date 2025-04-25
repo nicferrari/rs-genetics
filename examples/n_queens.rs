@@ -23,7 +23,7 @@ fn main() {
             _ => panic!("Expected Population::usize")
         }
     }
-    let num_queens = 10;
+    let num_queens = 9;
     let init_strategy = InitializationStrategy::Usize(Box::new(TSPInitialization));
     let mut config = Config::default();
     config.num_individuals=100;

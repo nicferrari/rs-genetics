@@ -2,7 +2,7 @@ use rs_genetics::plot::draw_fitness;
 use rs_genetics::population::{Config, GA, GetPopulation, InitializationStrategy, Population, TSPInitialization};
 
 fn main() {
-    struct City{x:f64,y:f64,};
+    struct City{x:f64,y:f64,}
     fn distance_(city1: &City, city2: &City) -> f64 {
         ((city1.x - city2.x).powi(2) + (city1.y - city2.y).powi(2)).sqrt()
     }
